@@ -18,6 +18,7 @@ runs:
       with:
         repository: ${{ inputs.pages-repo }}
         path: maven-repo
+        token: ${{ inputs.token }}
 
     - name: Build and Copy
       uses: burrunan/gradle-cache-action@v3
@@ -33,4 +34,4 @@ runs:
         git config user.email "actions@github.com"
         git add .
         git commit -m "Publish '$ARTIFACT_NAME'"
-        git push "https://${{ github.actor }}:${{ inputs.token }}@github.com/${{ inputs.pages-repo }}.git"
+        git push origin main
