@@ -1,0 +1,36 @@
+name: "Build and Publish"
+description: "Checkout pages repo, build and copy artifacts, push changes"
+
+inputs:
+  token:
+    description: "GitHub token or PAT with write access"
+    required: true
+  pages-repo:
+    description: "Maven Pages repository"
+    required: false
+    default: "gXLg/maven-repo"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout Maven Repo
+      uses: actions/checkout@v4.1.1
+      with:
+        repository: ${{ inputs.pages-repo }}
+        path: maven-repo
+
+    - name: Build and Copy
+      uses: burrunan/gradle-cache-action@v3
+      with:
+        arguments: build publish
+
+    - name: Push Changes
+      shell: bash
+      run: |
+        ARTIFACT_NAME=$(./gradlew -q printPublicationInfo || echo "(artifact)")
+        cd maven-repo
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add .
+        git commit -m "Publish '$ARTIFACT_NAME'"
+        git push "https://${{ github.actor }}:${{ inputs.token }}@github.com/${{ inputs.pages-repo }}.git"
